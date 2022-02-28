@@ -1,54 +1,58 @@
 package site.metacoding.second.web;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.ArrayList;
+import java.util.List;
 
-@RestController
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import site.metacoding.second.domain.Post;
+
+// View (글쓰기, 글목록, 글상세보기)
+@Controller
 public class PostController {
 
-    // SELECT * FROM post WHERE id = ?
-    // 구체적으로 요청 - body 없음
-    @GetMapping("/post/{id}")
-    public String test1(@PathVariable int id) {
-        return "주세요 id : " + id;
+    @GetMapping("/post/writeForm")
+    public String writeForm() {
+
+        return "post/writeForm";
     }
 
-    // SELECT * FROM post WHERE title = ?
-    @GetMapping("/post")
-    public String search(String title) {
-        return "주세요 title : " + title;
+    @GetMapping("/post/list")
+    public String list(Model model) {
+
+        List<Post> posts = new ArrayList<>();
+        // Post post1 = new Post(1, "제목1", "내용1");
+        // Post post2 = new Post(2, "제목2", "내용2");
+        // Post post3 = new Post(3, "제목3", "내용3");
+        // Post post4 = new Post(4, "제목4", "내용4");
+        // Post post5 = new Post(5, "제목5", "내용5");
+        // posts.add(post1);
+        // posts.add(post2);
+        // posts.add(post3);
+        // posts.add(post4);
+        // posts.add(post5);
+        for (int i = 1; i < 6; i++) {
+            Post post = new Post(i, "제목" + i, "내용" + i);
+            posts.add(post);
+        }
+
+        model.addAttribute("posts", posts);
+
+        return "post/list";
     }
 
-    // http://localhost:8000/post
-    // body : title=제목1&content=내용1
-    // header : Content-Type : application/x-www-form-urlencoded
-    // body 있음
-    // request.getParameter() 메서드가 스프링 기본 파싱 전략
-    @PostMapping("/post")
-    public String test2(String title, String content) {
-        return "줄게요 : title : " + title + " content : " + content;
-    }
+    @GetMapping("/post/detail")
+    public String detail(Model model) {
 
-    // UPDATE post SET title = ?, content = ? WHERE id = ?
-    // title,content (PK - id)
-    // body 있음
-    // API 문서 만들어야함
-    @PutMapping("/post/{id}")
-    public String test3(String title, String content, @PathVariable int id) {
-        return "수정해주세요 : title : " + title + ", content : " + content + ", id : " + id;
-    }
+        // 1. DB 연결해서 SELECT
+        // 2. ResultSet을 JavaObject로 변경
+        Post post = new Post(1, "제목1", "내용1");
 
-    // http://localhost:8000/post?title=제목1
-    // DELETE from post WHERE title = ?
-    // http://localhost:8000/post/1
-    // DELETE from post WHERE id = ?
-    // 구체적으로 요청 - body 없음
-    @DeleteMapping("/post/{id}")
-    public String test4(@PathVariable int id) {
-        return "삭제해주세요 : id : " + id;
+        // 3. request에 담기
+        model.addAttribute("post", post);
+
+        return "post/detail"; // RequestDispatcher로 forward함 = request가 복제된다.
     }
 }

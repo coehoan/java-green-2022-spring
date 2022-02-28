@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>글 쓰기 페이지입니다.</h1>
+    <h3>title=제목1&content=내용1 -> x-www-form-urlencoded</h3>
+    <hr/>
+    <form method="post" action="/post">
+        <input type="text" name="title" placeholder="Enter Title" /> <br/>
+        <textarea name="content" cols="30" rows="10"></textarea> <br/>
+        <button type="submit">글쓰기 완료</button>
+    </form>
+</body>
+</html>
