@@ -8,11 +8,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 // JPA 라이브러리는 Java Persistence(DB에 영구적인 저장) API(노출되어있는 메서드)
 // 1. CRUD 메서드를 기본 제공
 // 2. 자바코드로 DB 자동생성기능
 // 3. ORM 제공
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 @Entity // 서버 실행 시 해당 클래스로 DB 테이블을 생성한다.
 public class User {
     @Id // PK설정
@@ -25,7 +32,6 @@ public class User {
     private String password;
     @Column(length = 1600000000)
     private String email;
-    private String phone;
 
     private LocalDateTime createDate;
 }
