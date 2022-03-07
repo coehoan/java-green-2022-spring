@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import site.metacoding.dbproject.domain.user.User;
 import site.metacoding.dbproject.domain.user.UserRepository;
@@ -138,6 +137,7 @@ public class UserController {
     // 로그아웃 - 로그인O
     @GetMapping("/logout")
     public String logout() {
-        return "메인페이지"; // PostController 만들고 수정
+        session.invalidate(); // 세션 날리기
+        return "redirect:/loginForm"; // PostController 만들고 수정
     }
 }
