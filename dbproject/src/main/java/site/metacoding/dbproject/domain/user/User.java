@@ -36,7 +36,7 @@ public class User {
     private String username;
     @Column(length = 12, nullable = false)
     private String password;
-    @Column(length = 1600000000)
+    @Column(length = 1600000000, nullable = false)
     private String email;
 
     @CreatedDate // 생성일, insert만 작동

@@ -1,13 +1,19 @@
 package site.metacoding.dbproject.web;
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import site.metacoding.dbproject.domain.user.User;
 import site.metacoding.dbproject.domain.user.UserRepository;
@@ -17,12 +23,14 @@ public class UserController {
 
     // DI를 통해 의존관계 형성
     private UserRepository userRepository;
+    private HttpSession session;
 
     // @RequiredArgsConstructor
     // private final UserRepository userRepository
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, HttpSession session) {
         this.userRepository = userRepository;
+        this.session = session;
     }
 
     // 회원가입 페이지(정적) - 로그인X
@@ -35,11 +43,30 @@ public class UserController {
     // 회원가입 - 로그인X
     @PostMapping("/join")
     public String join(User user) {
-        // System.out.println("user : " + user);
-        userRepository.save(user);
-        // User userEntity = user;
-        // System.out.println("userEntity : " + userEntity);
-        // redirect:매핑주소
+
+        // null, 공백방지
+        if (user.getUsername().trim().isEmpty() || user.getPassword().trim().isEmpty()
+                || user.getEmail().trim().isEmpty()) {
+            return "redirect:/joinForm";
+        }
+
+        // 비밀번호 12자 제한
+        // 비밀번호 한글입력 방지
+        // 이메일 형식
+        String email = "^[_a-z0-9-]+(.[_a-z0-9-]+)*@(?:\\w+\\.)+\\w+$";
+        Pattern pattern = Pattern.compile(email);
+        Matcher matcher = pattern.matcher(user.getEmail());
+        System.out.println("매쳐 : " + matcher);
+        System.out.println("유저 이메일 : " + user.getEmail());
+        System.out.println("매쳐확인 : " + matcher.matches());
+
+        if (matcher.matches() == false) {
+            System.out.println("이메일 형식 오류");
+            return "user/joinForm";
+        }
+
+        // 핵심 로직
+        userRepository.save(user); // INSERT
         return "redirect:/loginForm"; // 로그인페이지로 이동해주는 컨트롤러 메서드를 재활용
     }
 
@@ -55,7 +82,7 @@ public class UserController {
     // 이유 - 주소에 패스워드를 남길 수 없기 때문
     @PostMapping("/login")
     public String login(HttpServletRequest request, User user) {
-        HttpSession session = request.getSession();
+
         User userEntity = userRepository.mLogin(user.getUsername(), user.getPassword());
         if (userEntity == null) {
             System.out.println("아이디 혹은 패스워드가 틀렸습니다");
@@ -68,10 +95,32 @@ public class UserController {
         return "redirect:/"; // PostController 만들고 수정
     }
 
+    // http://localhost:8080/user/1
     // 유저상세 페이지(동적) - 로그인O
     @GetMapping("/user/{id}")
-    public String detail(@PathVariable Integer id) {
-        return "user/detail";
+    public String detail(@PathVariable Integer id, Model model) {
+        User principal = (User) session.getAttribute("principal");
+
+        // 인증 체크
+        if (principal == null) {
+            return "error/page1";
+        }
+
+        // 권한 체크
+        if (principal.getId() != id) {
+            return "error/page1";
+        }
+
+        // 핵심 로직
+        Optional<User> userOp = userRepository.findById(id);
+
+        if (userOp.isPresent()) {
+            User userEntity = userOp.get();
+            model.addAttribute("user", userEntity);
+            return "user/detail";
+        } else {
+            return "error/page1";
+        }
     }
 
     // 유저정보수정 페이지(동적) - 로그인O
