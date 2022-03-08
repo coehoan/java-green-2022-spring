@@ -77,12 +77,18 @@ public class UserController {
     // request.getHeader("Cookie");
     public String loginForm(HttpServletRequest request, Model model) {
 
-        Cookie[] cookies = request.getCookies(); // jSessionId, remember 2개가 있어서 배열로 받음
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("remember")) {
-                model.addAttribute("remember", cookie.getValue());
+        if (request.getCookies() != null) {
+            Cookie[] cookies = request.getCookies(); // jSessionId, remember 두개가 있음.
+
+            for (Cookie cookie : cookies) {
+                System.out.println("쿠키값 : " + cookie.getName());
+                if (cookie.getName().equals("remember")) {
+                    model.addAttribute("remember", cookie.getValue());
+                }
+
             }
         }
+
         return "user/loginForm";
     }
 
@@ -97,13 +103,16 @@ public class UserController {
         if (userEntity == null) {
             System.out.println("아이디 혹은 패스워드가 틀렸습니다");
         } else {
-            System.out.println("로그인 되었습니다.");
+            System.out.println("로그인 되었습니다");
             session.setAttribute("principal", userEntity);
 
-            if (user.getRemember().equals("on")) {
-                response.setHeader("Set-Cookie", "remember=" + userEntity.getUsername());
+            if (user.getRemember() != null && user.getRemember().equals("on")) {
+                response.addHeader("Set-Cookie", "remember=" + user.getUsername());
+                // response.addHeader(name, value);
+                // response.addCookie(cookie);
             }
         }
+
         // 1. DB 연결해서 username,password 있는지 확인
         // 2. 있으면 session 영역에 인증됨 이라고 메세지를 보내자
         return "redirect:/"; // PostController 만들고 수정
