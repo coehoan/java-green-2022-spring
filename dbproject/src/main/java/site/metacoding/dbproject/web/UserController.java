@@ -118,9 +118,16 @@ public class UserController {
         return "redirect:/"; // PostController 만들고 수정
     }
 
+    // 로그아웃 - 로그인O
+    @GetMapping("/logout")
+    public String logout() {
+        session.invalidate(); // 세션 날리기
+        return "redirect:/loginForm"; // PostController 만들고 수정
+    }
+
     // http://localhost:8080/user/1
     // 유저상세 페이지(동적) - 로그인O
-    @GetMapping("/user/{id}")
+    @GetMapping("/s/user/{id}")
     public String detail(@PathVariable Integer id, Model model) {
         User principal = (User) session.getAttribute("principal");
 
@@ -147,21 +154,15 @@ public class UserController {
     }
 
     // 유저정보수정 페이지(동적) - 로그인O
-    @GetMapping("/user/updateForm")
+    @GetMapping("/s/user/updateForm")
     public String updateForm() {
         return "user/updateForm";
     }
 
     // 유저정보수정 - 로그인O
-    @PutMapping("/user/{id}")
+    @PutMapping("/s/user/{id}")
     public String update(@PathVariable Integer id) {
         return "redirect:/user/" + id;
     }
 
-    // 로그아웃 - 로그인O
-    @GetMapping("/logout")
-    public String logout() {
-        session.invalidate(); // 세션 날리기
-        return "redirect:/loginForm"; // PostController 만들고 수정
-    }
 }
