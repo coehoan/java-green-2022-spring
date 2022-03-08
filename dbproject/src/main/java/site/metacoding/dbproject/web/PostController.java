@@ -1,5 +1,8 @@
 package site.metacoding.dbproject.web;
 
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,18 +10,41 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import lombok.RequiredArgsConstructor;
+import site.metacoding.dbproject.domain.post.Post;
+import site.metacoding.dbproject.domain.post.PostRepository;
+
+@RequiredArgsConstructor
 @Controller
 public class PostController {
+
+    private final HttpSession session;
+    private final PostRepository postRepository;
 
     // 글쓰기 페이지 /post/writeForm - 인증 O
     @GetMapping("/s/post/writeForm")
     public String writeForm() {
+
+        if (session.getAttribute("principal") == null) {
+            return "redirect:/loginForm";
+        }
+
         return "post/writeForm";
     }
 
     // 글쓰기 - 인증 O
     @PostMapping("/s/post")
-    public String write() {
+    public String write(Post post) {
+
+        if (session.getAttribute("principal") == null) {
+            return "redirect:/loginForm";
+        }
+
+        User principal = (User) session.getAttribute("principal");
+        post.setUser(principal);
+
+        postRepository.save(post);
+
         return "redirect:/";
     }
 

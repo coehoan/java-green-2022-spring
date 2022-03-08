@@ -46,4 +46,7 @@ public class Post {
     private LocalDateTime createDate;
     @LastModifiedDate // 수정일 // insert,update에 작동
     private LocalDateTime updateTime;
+
+    public void setUser(org.apache.catalina.User principal) {
+    }
 }
