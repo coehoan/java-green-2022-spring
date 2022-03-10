@@ -82,6 +82,7 @@ public class UserController {
 
             for (Cookie cookie : cookies) {
                 System.out.println("쿠키값 : " + cookie.getName());
+
                 if (cookie.getName().equals("remember")) {
                     model.addAttribute("remember", cookie.getValue());
                 }
