@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javassist.runtime.Desc;
 import lombok.RequiredArgsConstructor;
 import site.metacoding.dbproject.domain.post.Post;
 import site.metacoding.dbproject.domain.post.PostRepository;
@@ -56,13 +59,24 @@ public class PostController {
     // 메인페이지 - 인증 X
     // 글목록 페이지 /post/list, / 주소가 2개
     @GetMapping({ "/", "/post/list" })
-    public String list(Model model) {
+    public String list(@RequestParam(defaultValue = "0") Integer page, Model model) {
         // 1. postRepository의 findAll() 호출
         // 2. model에 담기
-        model.addAttribute("posts", postRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-
+        // model.addAttribute("posts",
+        // postRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+        PageRequest pq = PageRequest.of(page, 3, Sort.by(Direction.DESC, "id"));
+        model.addAttribute("posts", postRepository.findAll(pq));
+        model.addAttribute("prevPage", page - 1);
+        model.addAttribute("nextPage", page + 1);
         return "post/list";
     }
+
+    // @GetMapping("test/post/list")
+    // public @ResponseBody Page<Post> listTest(@RequestParam(defaultValue = "0")
+    // Integer page) {
+    // PageRequest pq = PageRequest.of(page, 3);
+    // return postRepository.findAll(pq);
+    // }
 
     // 글수정페이지 - 인증 O
     @GetMapping("/s/post/{id}/updateForm")
