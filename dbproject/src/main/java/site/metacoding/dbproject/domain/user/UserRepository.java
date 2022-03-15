@@ -12,6 +12,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // 키바인딩 : - ?는 순서를 지켜서 넣어줘야하기때문에 키값으로 받는 키바인딩 사용
     @Query(value = "SELECT * FROM user WHERE username = :username AND password = :password", nativeQuery = true)
     User mLogin(@Param("username") String username, @Param("password") String password);
+
+    @Query(value = "SELECT * FROM user WHERE username = :username", nativeQuery = true)
+    User mUsernameSameCheck(@Param("username") String username);
+
     // findAll()
     // SELECT * FROM user;
 

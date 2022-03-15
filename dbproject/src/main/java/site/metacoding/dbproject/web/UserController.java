@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import site.metacoding.dbproject.domain.user.User;
 import site.metacoding.dbproject.domain.user.UserRepository;
+import site.metacoding.dbproject.web.dto.ResponseDto;
 
 @Controller
 public class UserController {
@@ -32,6 +34,21 @@ public class UserController {
     public UserController(UserRepository userRepository, HttpSession session) {
         this.userRepository = userRepository;
         this.session = session;
+    }
+
+    // 주소에 api가 있으면 데이터를 주는 컨트롤러
+    // 클라이언트가 입력한 username이 동일한지 확인 - 응답(JSON)
+    @GetMapping("/api/user/username/same-check")
+    public @ResponseBody ResponseDto<String> sameCheck(String username) {
+        // 1. SELECT * FROM user WHERE username = "ssar"
+        User userEntity = userRepository.mUsernameSameCheck(username);
+        // 2. 있으면 없으면
+        if (userEntity == null) {
+            return new ResponseDto<String>(1, "통신성공", "없음");
+        } else {
+            return new ResponseDto<String>(1, "통신성공", "있음");
+        }
+
     }
 
     // 회원가입 페이지(정적) - 로그인X
