@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,7 +59,8 @@ public class PostController {
     public String list(Model model) {
         // 1. postRepository의 findAll() 호출
         // 2. model에 담기
-        model.addAttribute("posts", postRepository.findAll());
+        model.addAttribute("posts", postRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
+
         return "post/list";
     }
 
