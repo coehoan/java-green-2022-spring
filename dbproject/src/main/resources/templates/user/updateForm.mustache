@@ -5,7 +5,8 @@
 
     <!-- 회원수정 폼 시작 -->
     <!-- 폼 태그는 put,delete 요청을 할 수 없기 때문에 자바스크립트로 제어해야한다. -->
-    <form> 
+    <form>
+        <input type="hidden" id="id" value="{{principal.id}}">
         <div class="mb-3 mt-3">
             <input type="text" class="form-control" value="{{principal.username}}" id="username" readonly>
         </div>
@@ -22,9 +23,51 @@
 </div>
 <!-- 컨테이너 끝 -->
 <script>
-    function update(){
-        let usernameDom = document.querySelector("#username");
-        console.log(usernameDom);
+    // 1. jQuery로 password, email 찾아서 자바스크립트 오브젝트로 만들기
+
+    // 2. 자바스크립트 오브젝트를 JSON으로 변환하기
+    //let modifyUserJson = JSON.stringify(modifyUser);
+    // 3. fetch 요청하기
+    async function update() {
+        let modifyUser = {
+            password: $("#password").val(),
+            email: $("#email").val()
+        }
+        console.log(modifyUser);
+
+        let modifyUserJson = JSON.stringify(modifyUser);
+        console.log(modifyUserJson);
+
+        let userObject = JSON.parse(modifyUserJson);
+        console.log(userObject);
+
+        let id = $("#id").val()
+        console.log(id);
+
+        let response = await fetch("/s/user/" + id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+            body: modifyUserJson
+        });
+
+        let responseObject = await response.json();
+
+        if (responseObject.code == 1) {
+            alert("수정 완료");
+            location.href = "/s/user/" + id;
+        } else {
+            alert("수정 실패 : " + responseObject.msg)
+        }
+
+        console.log("=============" + modifyUserJson.data);
+
+        // (1) content-type을 json으로 설정
+        // (2) put 메서드로 변경하기
+        // (3) body에 데이터 담아서 보내기
+        // (4) responseDto로 응답받아서 code가 1이면 alrert 창으로 수정성공 띄우기
+        // (5) 수정성공 메세지 이후 메인화면으로 이동 -location.href = "/"
     }
 </script>
 
