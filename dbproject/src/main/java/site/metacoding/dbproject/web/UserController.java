@@ -1,6 +1,5 @@
 package site.metacoding.dbproject.web;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,37 +16,26 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import lombok.RequiredArgsConstructor;
 import site.metacoding.dbproject.domain.user.User;
-import site.metacoding.dbproject.domain.user.UserRepository;
+import site.metacoding.dbproject.service.UserService;
 import site.metacoding.dbproject.web.dto.ResponseDto;
 
+@RequiredArgsConstructor
 @Controller
 public class UserController {
 
     // DI를 통해 의존관계 형성
-    private UserRepository userRepository;
-    private HttpSession session;
-
-    // @RequiredArgsConstructor
-    // private final UserRepository userRepository
-
-    public UserController(UserRepository userRepository, HttpSession session) {
-        this.userRepository = userRepository;
-        this.session = session;
-    }
+    private final UserService userService;
+    private final HttpSession session;
 
     // 주소에 api가 있으면 데이터를 주는 컨트롤러
     // 클라이언트가 입력한 username이 동일한지 확인 - 응답(JSON)
     @GetMapping("/api/user/username/same-check")
     public @ResponseBody ResponseDto<String> sameCheck(String username) {
-        // 1. SELECT * FROM user WHERE username = "ssar"
-        User userEntity = userRepository.mUsernameSameCheck(username);
-        // 2. 있으면 없으면
-        if (userEntity == null) {
-            return new ResponseDto<String>(1, "통신성공", "없음");
-        } else {
-            return new ResponseDto<String>(1, "통신성공", "있음");
-        }
+
+        String result = userService.유저네임중복검사(username);
+        return new ResponseDto<String>(1, "통신성공", result);
 
     }
 
@@ -62,6 +50,7 @@ public class UserController {
     @PostMapping("/join")
     public String join(User user) {
 
+        // 필터의 역할
         // null, 공백방지
         if (user.getUsername().trim().isEmpty() || user.getPassword().trim().isEmpty()
                 || user.getEmail().trim().isEmpty()) {
@@ -83,8 +72,8 @@ public class UserController {
             return "user/joinForm";
         }
 
-        // 핵심 로직
-        userRepository.save(user); // INSERT
+        userService.회원가입(user);
+
         return "redirect:/loginForm"; // 로그인페이지로 이동해주는 컨트롤러 메서드를 재활용
     }
 
@@ -117,23 +106,18 @@ public class UserController {
     @PostMapping("/login")
     public String login(User user, HttpServletResponse response) {
 
-        User userEntity = userRepository.mLogin(user.getUsername(), user.getPassword());
-        if (userEntity == null) {
-            System.out.println("아이디 혹은 패스워드가 틀렸습니다");
-        } else {
-            System.out.println("로그인 되었습니다");
-            session.setAttribute("principal", userEntity);
+        User userEntity = userService.로그인(user);
 
+        if (userEntity != null) {
+            session.setAttribute("principal", userEntity);
             if (user.getRemember() != null && user.getRemember().equals("on")) {
                 response.addHeader("Set-Cookie", "remember=" + user.getUsername());
-                // response.addHeader(name, value);
-                // response.addCookie(cookie);
             }
+            return "redirect:/";
+        } else {
+            return "redirect:/loginForm";
         }
 
-        // 1. DB 연결해서 username,password 있는지 확인
-        // 2. 있으면 session 영역에 인증됨 이라고 메세지를 보내자
-        return "redirect:/"; // PostController 만들고 수정
     }
 
     // 로그아웃 - 로그인O
@@ -147,6 +131,7 @@ public class UserController {
     // 유저상세 페이지(동적) - 로그인O
     @GetMapping("/s/user/{id}")
     public String detail(@PathVariable Integer id, Model model) {
+
         User principal = (User) session.getAttribute("principal");
 
         // 인증 체크
@@ -159,27 +144,27 @@ public class UserController {
             return "error/page1";
         }
 
-        // 핵심 로직
-        Optional<User> userOp = userRepository.findById(id);
-
-        if (userOp.isPresent()) {
-            User userEntity = userOp.get();
+        User userEntity = userService.회원정보보기(id);
+        if (userEntity == null)
+            return "error/page1";
+        else {
             model.addAttribute("user", userEntity);
             return "user/detail";
-        } else {
-            return "error/page1";
         }
     }
 
     // 유저정보수정 페이지(동적) - 로그인O
     @GetMapping("/s/user/updateForm")
     public String updateForm() {
+        // 세션값을 출력
+        // 원래라면 DB에서 가져와서 출력시켜야함
         return "user/updateForm";
     }
 
     // 유저정보수정 - 로그인O
     @PutMapping("/s/user/{id}")
     public String update(@PathVariable Integer id) {
+
         return "redirect:/user/" + id;
     }
 

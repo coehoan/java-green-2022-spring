@@ -27,7 +27,7 @@
     async function usernameSameCheck(username) {
         let response = await fetch(`/api/user/username/same-check?username=${username}`);
         let responseJson = await response.json();
-
+        console.log(response);
         console.log(responseJson);
 
         if (responseJson.data == "있음") {

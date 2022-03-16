@@ -1,12 +1,8 @@
 package site.metacoding.dbproject.web;
 
-import java.util.Optional;
-
 import javax.servlet.http.HttpSession;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,15 +14,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import lombok.RequiredArgsConstructor;
 import site.metacoding.dbproject.domain.post.Post;
-import site.metacoding.dbproject.domain.post.PostRepository;
 import site.metacoding.dbproject.domain.user.User;
+import site.metacoding.dbproject.service.PostService;
 
 @RequiredArgsConstructor
 @Controller
 public class PostController {
 
     private final HttpSession session;
-    private final PostRepository postRepository;
+    private final PostService postService;
 
     // 글쓰기 페이지 /post/writeForm - 인증 O
     @GetMapping("/s/post/writeForm")
@@ -39,6 +35,7 @@ public class PostController {
         return "post/writeForm";
     }
 
+    // 이사
     // 글쓰기 - 인증 O
     @PostMapping("/s/post")
     public String write(Post post) {
@@ -48,23 +45,20 @@ public class PostController {
         }
 
         User principal = (User) session.getAttribute("principal");
-        post.setUser(principal);
-
-        postRepository.save(post);
+        postService.글쓰기(post, principal);
 
         return "redirect:/";
     }
 
+    // 이사
     // 메인페이지 - 인증 X
     // 글목록 페이지 /post/list, / 주소가 2개
     @GetMapping({ "/", "/post/list" })
     public String list(@RequestParam(defaultValue = "0") Integer page, Model model) {
-        // 1. postRepository의 findAll() 호출
-        // 2. model에 담기
-        // model.addAttribute("posts",
-        // postRepository.findAll(Sort.by(Sort.Direction.DESC, "id")));
-        PageRequest pq = PageRequest.of(page, 3, Sort.by(Direction.DESC, "id"));
-        model.addAttribute("posts", postRepository.findAll(pq));
+
+        Page<Post> pagePosts = postService.글목록보기(page);
+
+        model.addAttribute("posts", pagePosts);
         model.addAttribute("prevPage", page - 1);
         model.addAttribute("nextPage", page + 1);
         return "post/list";
@@ -89,18 +83,18 @@ public class PostController {
         return "redirect:/post/" + id;
     }
 
+    // 이사
     // 글상세보기 페이지 /post/{id} (삭제, 수정버튼 만들기) - 인증 X
     @GetMapping("/post/{id}") // Get요청에 /post 제외 시키기
     public String detail(@PathVariable Integer id, Model model) {
 
-        Optional<Post> postOp = postRepository.findById(id);
+        Post postEntity = postService.글상세보기(id);
 
-        if (postOp.isPresent()) {
-            Post postEntity = postOp.get();
+        if (postEntity == null)
+            return "error/page1";
+        else {
             model.addAttribute("post", postEntity);
             return "post/detail";
-        } else {
-            return "error/page1";
         }
     }
 
