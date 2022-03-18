@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import lombok.RequiredArgsConstructor;
 import site.metacoding.dbproject.domain.post.Post;
 import site.metacoding.dbproject.domain.user.User;
 import site.metacoding.dbproject.service.PostService;
+import site.metacoding.dbproject.web.dto.ResponseDto;
 
 @RequiredArgsConstructor
 @Controller
@@ -100,7 +102,22 @@ public class PostController {
 
     // 글삭제 - 인증 O
     @DeleteMapping("/s/post/{id}")
-    public String delete(@PathVariable Integer id) {
-        return "redirect:/";
+    public @ResponseBody ResponseDto<String> delete(@PathVariable Integer id) {
+
+        User principal = (User) session.getAttribute("principal");
+
+        if (principal == null) { // 로그인정보 없음
+            return new ResponseDto<String>(-1, "로그인이 되지 않았습니다.", null);
+        }
+
+        Post postEntity = postService.글상세보기(id);
+
+        if (principal.getId() != (postEntity.getId())) { // 권한이 없음
+            return new ResponseDto<String>(-1, "해당 글 삭제 권한이 없습니다.", null);
+        }
+
+        postService.글삭제하기(id); // 내부적으로 Exception 발생 시 무조건 stacktrace 리턴
+
+        return new ResponseDto<String>(1, "성공", null);
     }
 }

@@ -45,8 +45,8 @@ public class PostService {
     }
 
     @Transactional
-    public void 글삭제하기() {
-
+    public void 글삭제하기(Integer id) {
+        postRepository.deleteById(id);
     }
 
     @Transactional
