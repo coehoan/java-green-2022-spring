@@ -90,14 +90,26 @@ public class PostController {
     @GetMapping("/post/{id}") // Get요청에 /post 제외 시키기
     public String detail(@PathVariable Integer id, Model model) {
 
+        User principal = (User) session.getAttribute("principal");
+
         Post postEntity = postService.글상세보기(id);
 
-        if (postEntity == null)
+        // 게시물이 없으면 error페이지 이동
+        if (postEntity == null) {
             return "error/page1";
-        else {
-            model.addAttribute("post", postEntity);
-            return "post/detail";
         }
+
+        if (principal != null) {
+            // 권한 확인해서 view로 값 넘김
+            if (principal.getId() == postEntity.getUser().getId()) { // 권한이 있음
+                model.addAttribute("pageOwner", true);
+            } else
+                model.addAttribute("pageOwner", false);
+        }
+
+        model.addAttribute("post", postEntity);
+        return "post/detail";
+
     }
 
     // 글삭제 - 인증 O
