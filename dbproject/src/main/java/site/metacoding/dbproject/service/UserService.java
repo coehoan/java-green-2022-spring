@@ -2,8 +2,6 @@ package site.metacoding.dbproject.service;
 
 import java.util.Optional;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +14,6 @@ import site.metacoding.dbproject.domain.user.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final HttpSession session;
 
     public String 유저네임중복검사(String username) {
 

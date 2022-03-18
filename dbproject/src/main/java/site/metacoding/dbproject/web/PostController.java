@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -75,14 +76,46 @@ public class PostController {
 
     // 글수정페이지 - 인증 O
     @GetMapping("/s/post/{id}/updateForm")
-    public String updateForm(@PathVariable Integer id) {
+    public String updateForm(@PathVariable Integer id, Model model) {
+
+        // 인증
+        User principal = (User) session.getAttribute("principal");
+        if (principal == null) {
+            return "error/page1";
+        }
+
+        // 권한
+        Post postEntity = postService.글상세보기(id);
+
+        if (postEntity.getUser().getId() != principal.getId()) {
+            return "error/page1";
+        }
+
+        model.addAttribute("post", postEntity);
+
         return "post/updateForm";
     }
 
     // 글수정 - 인증 O
     @PutMapping("/s/post/{id}")
-    public String update(@PathVariable Integer id) {
-        return "redirect:/post/" + id;
+    public @ResponseBody ResponseDto<String> update(@PathVariable Integer id, @RequestBody Post post) {
+
+        // 인증
+        User principal = (User) session.getAttribute("principal");
+        if (principal == null) {
+            return new ResponseDto<String>(-1, "로그인이 되지 않았습니다.", null);
+        }
+
+        // 권한
+        Post postEntity = postService.글상세보기(id);
+
+        if (postEntity.getUser().getId() != principal.getId()) {
+            return new ResponseDto<String>(-1, "글 수정 권한이 없습니다.", null);
+        }
+
+        postService.글수정하기(post, id);
+
+        return new ResponseDto<String>(1, "수정 완료", null);
     }
 
     // 이사

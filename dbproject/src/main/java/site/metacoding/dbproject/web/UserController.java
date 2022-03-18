@@ -141,7 +141,7 @@ public class UserController {
         }
 
         // 권한 체크
-        if (principal.getId() != id) {
+        if (principal.getId() != id) { // 403에러 같이 리턴
             return "error/page1";
         }
 
