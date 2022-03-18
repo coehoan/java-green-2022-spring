@@ -140,6 +140,10 @@ public class PostController {
                 model.addAttribute("pageOwner", false);
         }
 
+        String rawContent = postEntity.getContent();
+        String encContent = rawContent.replaceAll("<", "&lt;".replaceAll(">", "&gt;"));
+        postEntity.setContent(encContent);
+
         model.addAttribute("post", postEntity);
         return "post/detail";
 
